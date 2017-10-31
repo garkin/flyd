@@ -103,7 +103,7 @@ function combine(fn, streams) {
  */
 flyd.isStream = function(stream) {
   return isFunction(stream) && 'hasVal' in stream;
-}
+};
 
 /**
  * Invokes the body (the function to calculate the value) of a dependent stream
@@ -136,7 +136,7 @@ flyd.immediate = function(s) {
     updateStream(s);
   }
   return s;
-}
+};
 
 /**
  * Changes which `endsStream` should trigger the ending of `s`.
@@ -161,7 +161,7 @@ flyd.endsOn = function(endS, s) {
   endS.listeners.push(s.end);
   s.end.deps.push(endS);
   return s;
-}
+};
 
 /**
  * Map a stream
@@ -183,7 +183,7 @@ flyd.endsOn = function(endS, s) {
 // Library functions use self callback to accept (null, undefined) update triggers.
 flyd.map = curryN(2, function(f, s) {
   return combine(function(s, self) { self(f(s.val)); }, [s]);
-})
+});
 
 /**
  * Listen to stream events
@@ -201,7 +201,7 @@ flyd.map = curryN(2, function(f, s) {
  */
 flyd.on = curryN(2, function(f, s) {
   return combine(function(s) { f(s.val); }, [s]);
-})
+});
 
 /**
  * Creates a new stream with the results of calling the function on every incoming
@@ -312,7 +312,7 @@ flyd.transduce = curryN(2, function(xform, source) {
  * var a = flyd.curryN(2, add);
  * a(2)(4) // => 6
  */
-flyd.curryN = curryN
+flyd.curryN = curryN;
 
 /**
  * Returns a new stream identical to the original except every
@@ -358,6 +358,16 @@ function boundMap(f) { return flyd.map(f, this); }
 function ap(s2) {
   var s1 = this;
   return combine(function(s1, s2, self) { self(s1.val(s2.val)); }, [s1, s2]);
+}
+
+/**
+ * Get a human readable view of a stream
+ * @name stream.on
+ * @param {Function} cb - the callback
+ * @return {stream} an empty stream (can be ended)
+ */
+function streamOn(cb) {
+  return combine(function(s) { cb(s.val); }, [this]);
 }
 
 /**
@@ -414,6 +424,7 @@ function createStream() {
   s.map = boundMap;
   s.ap = ap;
   s.of = flyd.stream;
+  s.on = streamOn;
   s.toString = streamToString;
   return s;
 }
