@@ -192,8 +192,6 @@ flyd.map = curryN(2, function(f, s) {
  * side effects in reaction to stream changes. Use the returned stream only if you
  * need to manually end it.
  *
- * __Signature__: `(a -> result) -> Stream a -> Stream undefined`
- *
  * @name flyd.on
  * @param {Function} cb - the callback
  * @param {stream} stream - the stream
@@ -202,6 +200,25 @@ flyd.map = curryN(2, function(f, s) {
 flyd.on = curryN(2, function(f, s) {
   return combine(function(s) { f(s.val); }, [s]);
 });
+
+/**
+ * Filter events based on predicate.
+ *
+ * Filter. Passes events downstream only if predicate returns true.
+ *
+ * __Signature__: `(a -> result) -> Stream a -> Stream undefined`
+ *
+ * @name flyd.on
+ * @param {Function} fn - predicate
+ * @param {stream} stream - the stream
+ * @return {stream} an empty stream (can be ended)
+ */
+flyd.filter = curryN(2, filter);
+function filter(fn, s) {
+  return flyd.combine(function(s, self) {
+    if (fn(s())) self(s.val);
+  }, [s]);
+}
 
 /**
  * Creates a new stream with the results of calling the function on every incoming
@@ -371,6 +388,17 @@ function streamOn(cb) {
 }
 
 /**
+ * Filter as method of stream instance
+ * @name stream.filter
+ * @param {Function} fn - predicate, should return true to pass down a value
+ * @return {stream} an empty stream (can be ended)
+ */
+function streamFilter(fn) {
+  return filter(fn, this);
+}
+
+
+/**
  * Get a human readable view of a stream
  * @name stream.toString
  * @return {String} the stream string representation
@@ -425,6 +453,7 @@ function createStream() {
   s.ap = ap;
   s.of = flyd.stream;
   s.on = streamOn;
+  s.streamFilter = streamFilter;
   s.toString = streamToString;
   return s;
 }
