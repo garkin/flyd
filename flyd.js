@@ -453,7 +453,7 @@ function createStream() {
   s.ap = ap;
   s.of = flyd.stream;
   s.on = streamOn;
-  s.streamFilter = streamFilter;
+  s.filter = streamFilter;
   s.toString = streamToString;
   return s;
 }
