@@ -17,7 +17,7 @@ var orderNextIdx = -1;
 var flushing = false;
 
 /** @namespace */
-var flyd = {}
+var flyd = {};
 
 // /////////////////////////// API ///////////////////////////////// //
 
@@ -348,7 +348,9 @@ flyd.curryN = curryN;
  * var numbers = flyd.stream(0);
  * var squaredNumbers = numbers.map(function(n) { return n*n; });
  */
-function boundMap(f) { return flyd.map(f, this); }
+function streamMap(f) {
+  return flyd.map(f, this);
+}
 
 /**
  * Returns a new stream which is the result of applying the
@@ -397,7 +399,6 @@ function streamFilter(fn) {
   return filter(fn, this);
 }
 
-
 /**
  * Get a human readable view of a stream
  * @name stream.toString
@@ -405,6 +406,16 @@ function streamFilter(fn) {
  */
 function streamToString() {
   return 'stream(' + this.val + ')';
+}
+
+/**
+ * Pass stream as a function parameter and return result
+ * @name stream.use
+ * @param {Function} fn -
+ * @return fn result
+ */
+function streamUse(fn) {
+  return fn(this);
 }
 
 /**
@@ -435,13 +446,13 @@ function streamToString() {
 /**
  * @private
  * Create a stream with no dependencies and no value
- * @return {Function} a flyd stream
+ * @return {stream} a flyd stream
  */
 function createStream() {
   function s(n) {
-    if (arguments.length === 0) return s.val
-    updateStreamValue(s, n)
-    return s
+    if (arguments.length === 0) return s.val;
+    updateStreamValue(s, n);
+    return s;
   }
   s.hasVal = false;
   s.val = undefined;
@@ -449,7 +460,8 @@ function createStream() {
   s.listeners = [];
   s.queued = false;
   s.end = undefined;
-  s.map = boundMap;
+  s.map = streamMap;
+  s.use = streamUse;
   s.ap = ap;
   s.of = flyd.stream;
   s.on = streamOn;
@@ -493,7 +505,7 @@ function initialDepsNotMet(stream) {
 /**
  * @private
  * Update a dependent stream using its dependencies in an atomic way
- * @param {stream} stream - the stream to update
+ * @param {stream} s - the stream to update
  */
 function updateStream(s) {
   if ((s.depsMet !== true && initialDepsNotMet(s)) ||
